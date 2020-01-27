@@ -4,6 +4,7 @@ from typing import Optional
 
 from anytree import LevelOrderIter, NodeMixin, RenderTree
 from colorama import Fore, init
+import google.api_core 
 from google.cloud import bigquery
 from google.cloud.bigquery import Table, AccessEntry, Dataset
 
@@ -152,7 +153,10 @@ class ViewAnalyzer:
                 project_id = (
                     project_id or table.project
                 )  # default to parent view's project
-                child_table = self._get_table(project_id, dataset_id, table_id)
-                child_node = TableNode(table=child_table, parent=table_node)
-                self._build_tree(child_node)
+                try:
+                    child_table = self._get_table(project_id, dataset_id, table_id)
+                    child_node = TableNode(table=child_table, parent=table_node)
+                    self._build_tree(child_node)
+                except google.api_core.exceptions.NotFound:
+                    pass
         return table_node
